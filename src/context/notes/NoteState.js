@@ -2,7 +2,7 @@ import { useState } from "react";
 import NoteContext from "./NoteContext";
 
 const NoteState = (props) => {
-    const host = "http://localhost:5000";
+   const host = "https://inotebook-backend-i56l.onrender.com";
  const initialNotes = []
  const [notes, setNotes] = useState(initialNotes);
 
@@ -67,7 +67,7 @@ setNotes(json);
       const editNote = async (id, title, description, tag) => {
         //TODO: API call to add a note
 
-        const response = await fetch(`${host}/api/notes/updateNote/${id}`, {
+        const response = await fetch(`${host}/api/notes/updatenote/${id}`, {
   method: 'PUT',
   headers: {
     'Content-Type': 'application/json',
