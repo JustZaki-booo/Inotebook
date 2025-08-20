@@ -1,15 +1,18 @@
 const mongoose = require("mongoose");
-require("dotenv").config(); // load variables from .env
+require("dotenv").config();
 
-// use the value from .env file
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/inotebook";
 
 const connectToMongo = async () => {
   try {
-    await mongoose.connect(mongoURI);
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("✅ Connected to MongoDB successfully");
   } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
+    console.error("❌ MongoDB connection error:", error.message);
+    process.exit(1);
   }
 };
 
