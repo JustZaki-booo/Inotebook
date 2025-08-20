@@ -16,10 +16,10 @@ app.use(express.json());
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/notes", require("./routes/notes"));
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Hello Zaki!");
-});
+// // Test route
+// app.get("/", (req, res) => {
+//   res.send("Hello Zaki!");
+// });
 
 const path = require('path');
 
