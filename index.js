@@ -21,7 +21,20 @@ app.get("/", (req, res) => {
   res.send("Hello Zaki!");
 });
 
+const path = require('path');
+
+// Serve React frontend
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`🚀 iNotebook backend listening on port ${port}`);
 });
+
+
+
+
