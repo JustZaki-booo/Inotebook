@@ -5,7 +5,7 @@ const NoteState = (props) => {
   const host = "https://inotebook-backend-i56l.onrender.com";
   const [notes, setNotes] = useState([]);
 
-  // Get all notes from the server
+  // Get all notes
   const getNotes = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -39,12 +39,18 @@ const NoteState = (props) => {
 
   // Add a note
   const addNote = async (title, description, tag) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No auth token for addNote");
+      return;
+    }
+
     try {
       const response = await fetch(`${host}/api/notes/addnote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "auth-token": localStorage.getItem("token"),
+          "auth-token": token,
         },
         body: JSON.stringify({ title, description, tag }),
       });
@@ -55,7 +61,7 @@ const NoteState = (props) => {
       }
 
       const newNote = await response.json();
-      setNotes(notes.concat(newNote));
+      setNotes((prevNotes) => prevNotes.concat(newNote));
     } catch (error) {
       console.error("Error adding note:", error);
     }
@@ -63,12 +69,15 @@ const NoteState = (props) => {
 
   // Delete a note
   const deleteNote = async (_id) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
       const response = await fetch(`${host}/api/notes/deletenote/${_id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "auth-token": localStorage.getItem("token"),
+          "auth-token": token,
         },
       });
 
@@ -77,7 +86,7 @@ const NoteState = (props) => {
         return;
       }
 
-      setNotes(notes.filter((note) => note._id !== _id));
+      setNotes((prevNotes) => prevNotes.filter((note) => note._id !== _id));
     } catch (error) {
       console.error("Error deleting note:", error);
     }
@@ -85,12 +94,15 @@ const NoteState = (props) => {
 
   // Edit a note
   const editNote = async (id, title, description, tag) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
       const response = await fetch(`${host}/api/notes/updatenote/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "auth-token": localStorage.getItem("token"),
+          "auth-token": token,
         },
         body: JSON.stringify({ title, description, tag }),
       });
@@ -100,17 +112,20 @@ const NoteState = (props) => {
         return;
       }
 
-      // Update local notes array
-      setNotes(notes.map((note) => 
-        note._id === id ? { ...note, title, description, tag } : note
-      ));
+      setNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          note._id === id ? { ...note, title, description, tag } : note
+        )
+      );
     } catch (error) {
       console.error("Error editing note:", error);
     }
   };
 
   return (
-    <NoteContext.Provider value={{ notes, addNote, deleteNote, editNote, getNotes }}>
+    <NoteContext.Provider
+      value={{ notes, addNote, deleteNote, editNote, getNotes }}
+    >
       {props.children}
     </NoteContext.Provider>
   );
