@@ -5,7 +5,7 @@ const NoteState = (props) => {
   const host = "https://inotebook-backend-i56l.onrender.com";
   const [notes, setNotes] = useState([]);
 
-  // Get all notes
+  // GET all notes
   const getNotes = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -37,13 +37,10 @@ const NoteState = (props) => {
     }
   };
 
-  // Add a note
+  // ADD note
   const addNote = async (title, description, tag) => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("No auth token for addNote");
-      return;
-    }
+    if (!token) return;
 
     try {
       const response = await fetch(`${host}/api/notes/addnote`, {
@@ -61,19 +58,19 @@ const NoteState = (props) => {
       }
 
       const newNote = await response.json();
-      setNotes((prevNotes) => prevNotes.concat(newNote));
+      setNotes([...notes, newNote]); // add to state
     } catch (error) {
       console.error("Error adding note:", error);
     }
   };
 
-  // Delete a note
-  const deleteNote = async (_id) => {
+  // DELETE note
+  const deleteNote = async (id) => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
-      const response = await fetch(`${host}/api/notes/deletenote/${_id}`, {
+      const response = await fetch(`${host}/api/notes/deletenote/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -86,13 +83,13 @@ const NoteState = (props) => {
         return;
       }
 
-      setNotes((prevNotes) => prevNotes.filter((note) => note._id !== _id));
+      setNotes(notes.filter((note) => note._id !== id));
     } catch (error) {
       console.error("Error deleting note:", error);
     }
   };
 
-  // Edit a note
+  // EDIT note
   const editNote = async (id, title, description, tag) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -112,20 +109,16 @@ const NoteState = (props) => {
         return;
       }
 
-      setNotes((prevNotes) =>
-        prevNotes.map((note) =>
-          note._id === id ? { ...note, title, description, tag } : note
-        )
-      );
+      setNotes(notes.map((note) =>
+        note._id === id ? { ...note, title, description, tag } : note
+      ));
     } catch (error) {
       console.error("Error editing note:", error);
     }
   };
 
   return (
-    <NoteContext.Provider
-      value={{ notes, addNote, deleteNote, editNote, getNotes }}
-    >
+    <NoteContext.Provider value={{ notes, getNotes, addNote, deleteNote, editNote }}>
       {props.children}
     </NoteContext.Provider>
   );
