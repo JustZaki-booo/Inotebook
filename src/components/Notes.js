@@ -1,15 +1,10 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import Noteitem from "./Noteitem";
 import AddNote from "./AddNote";
-import context from "../context/notes/NoteContext";
+import NoteContext from "../context/notes/NoteContext";
 
-// Home component to display notes and a form to add new notes
 function Notes(props) {
-  const { notes, getNotes, editNote } = useContext(context);
-
-  useEffect(() => {
-    getNotes(); // Fetch notes when the component mounts
-  }, []);
+  const { notes, getNotes, editNote } = useContext(NoteContext);
 
   const ref = useRef(null);
   const refClose = useRef(null);
@@ -20,13 +15,21 @@ function Notes(props) {
     etag: ""
   });
 
+  // Fetch notes on mount only if token exists
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      getNotes().catch(err => console.error("Failed to fetch notes:", err));
+    }
+  }, [getNotes]);
+
   const updateNote = (currentNote) => {
     ref.current.click();
     setNote({
       id: currentNote._id,
       etitle: currentNote.title,
       edescription: currentNote.description,
-      etag: currentNote.tag,
+      etag: currentNote.tag || "",
     });
   };
 
@@ -44,36 +47,80 @@ function Notes(props) {
     <>
       <AddNote showAlert={props.showAlert} />
 
-      <button ref={ref} type="button" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-        Launch static backdrop modal
+      <button
+        ref={ref}
+        type="button"
+        className="btn btn-primary d-none"
+        data-bs-toggle="modal"
+        data-bs-target="#editModal"
+      >
+        Launch edit modal
       </button>
 
-      <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div
+        className="modal fade"
+        id="editModal"
+        tabIndex="-1"
+        aria-labelledby="editModalLabel"
+        aria-hidden="true"
+      >
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h1 className="modal-title fs-5" id="staticBackdropLabel">Edit Note</h1>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h5 className="modal-title" id="editModalLabel">Edit Note</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div className="modal-body">
               <form>
                 <div className="mb-3">
                   <label htmlFor="etitle" className="form-label">Title</label>
-                  <input type="text" className="form-control" id="etitle" name="etitle" value={note.etitle} onChange={onChange} minLength={3} required />
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="etitle"
+                    name="etitle"
+                    value={note.etitle}
+                    onChange={onChange}
+                    minLength={3}
+                    required
+                  />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="edescription" className="form-label">Description</label>
-                  <input type="text" className="form-control" id="edescription" name="edescription" value={note.edescription} onChange={onChange} minLength={5} required />
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="edescription"
+                    name="edescription"
+                    value={note.edescription}
+                    onChange={onChange}
+                    minLength={5}
+                    required
+                  />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="etag" className="form-label">Tag</label>
-                  <input type="text" className="form-control" id="etag" name="etag" value={note.etag} onChange={onChange} />
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="etag"
+                    name="etag"
+                    value={note.etag}
+                    onChange={onChange}
+                  />
                 </div>
               </form>
             </div>
             <div className="modal-footer">
               <button ref={refClose} type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button onClick={handleClick} disabled={note.etitle.length < 3 || note.edescription.length < 5} type="button" className="btn btn-primary">Update Note</button>
+              <button
+                onClick={handleClick}
+                disabled={note.etitle.length < 3 || note.edescription.length < 5}
+                type="button"
+                className="btn btn-primary"
+              >
+                Update Note
+              </button>
             </div>
           </div>
         </div>
@@ -82,9 +129,9 @@ function Notes(props) {
       <div className="row my-3">
         <h1>Your Notes</h1>
         <div className="container">
-          {notes.length === 0 && "No Notes to display"}
+          {(!notes || notes.length === 0) && "No Notes to display"}
         </div>
-        {notes.map((note) => (
+        {notes && notes.map((note) => (
           <Noteitem key={note._id} updateNote={updateNote} note={note} showAlert={props.showAlert} />
         ))}
       </div>
